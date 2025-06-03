@@ -44,7 +44,7 @@ export default function JwtLoginView() {
     email: Yup.string().required('Email is required').email('Email must be a valid email address'),
     password: Yup.string().required('Password is required'),
   });
-// bu kısım değişti
+  // bu kısım değişti
   const defaultValues = {
     email: 'alper@example.com',
     password: 'examplepassword',
@@ -129,7 +129,6 @@ export default function JwtLoginView() {
   return (
     <>
       {renderHead}
-
 
       {!!errorMsg && (
         <Alert severity="error" sx={{ mb: 3 }}>

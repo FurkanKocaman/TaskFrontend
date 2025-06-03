@@ -24,6 +24,7 @@ import DesingDetailsReview from '../desing-details-review';
 import DesingDetailsSummary from '../desing-details-summary';
 import DesingDetailsToolbar from '../desing-details-toolbar';
 import DesingDetailsCarousel from '../desing-details-carousel';
+import DesingListView from './desing-list-view';
 
 // ----------------------------------------------------------------------
 
@@ -79,7 +80,7 @@ export default function DesingDetailsView({ id }) {
       action={
         <Button
           component={RouterLink}
-          href={paths.dashboard.desing.root}
+          href={paths.dashboard.design.root}
           startIcon={<Iconify icon="eva:arrow-ios-back-fill" width={16} />}
           sx={{ mt: 3 }}
         >
@@ -93,8 +94,8 @@ export default function DesingDetailsView({ id }) {
   const renderDesing = desing && (
     <>
       <DesingDetailsToolbar
-        backLink={paths.dashboard.desing.root}
-        editLink={paths.dashboard.desing.edit(`${desing?.id}`)}
+        backLink={paths.dashboard.design.root}
+        editLink={paths.dashboard.design.edit(`${desing?.id}`)}
         liveLink={paths.desing.details(`${desing?.id}`)}
         publish={publish || ''}
         onChangePublish={handleChangePublish}
@@ -183,6 +184,7 @@ export default function DesingDetailsView({ id }) {
       {desingError && renderError}
 
       {desing && renderDesing}
+      <DesingListView />
     </Container>
   );
 }

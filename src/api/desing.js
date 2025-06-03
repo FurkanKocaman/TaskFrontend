@@ -6,19 +6,19 @@ import { fetcher, endpoints } from 'src/utils/axios';
 // ----------------------------------------------------------------------
 
 export function useGetDesings() {
-  const URL = endpoints.product.list;
+  const URL = endpoints.documents.get;
 
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
 
   const memoizedValue = useMemo(
     () => ({
-      desings: data?.products || [],
+      desings: data?.desing || [],
       desingsLoading: isLoading,
       desingsError: error,
       desingsValidating: isValidating,
-      desingsEmpty: !isLoading && !data?.products.length,
+      desingsEmpty: !isLoading && !data.desing.length,
     }),
-    [data?.products, error, isLoading, isValidating]
+    [data.desing, error, isLoading, isValidating]
   );
 
   return memoizedValue;

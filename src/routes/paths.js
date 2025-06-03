@@ -35,5 +35,14 @@ export const paths = {
         spoolFollow: `${ROOTS.DASHBOARD}/construction/pipe-follow/spool-follow`,
       },
     },
+    design: {
+      root: `${ROOTS.DASHBOARD}/design`,
+      documents: {
+        root: `${ROOTS.DASHBOARD}/design/documents`,
+        new: `${ROOTS.DASHBOARD}/design/documents/new`,
+        edit: (id) => `${ROOTS.DASHBOARD}/design/documents/${id}/edit`,
+        details: (id) => `${ROOTS.DASHBOARD}/design/documents/${id}`,
+      },
+    },
   },
 };

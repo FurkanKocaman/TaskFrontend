@@ -24,7 +24,7 @@ import { RouterLink } from 'src/routes/components';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { useGetDesings, useGetDocuments } from 'src/api/desing';
+import { useGetDocuments } from 'src/api/document';
 import { ORDER_STATUS_OPTIONS, PRODUCT_STOCK_OPTIONS } from 'src/_mock';
 
 import Label from 'src/components/label';
@@ -35,8 +35,8 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 
-import DesingTableToolbar from '../desing-table-toolbar';
-import DesingTableFiltersResult from '../desing-table-filters-result';
+import DesingTableToolbar from '../../desing-table-toolbar';
+import DesingTableFiltersResult from '../../desing-table-filters-result';
 import {
   RenderRemarkType,
   RenderRemarkOwner,
@@ -46,7 +46,7 @@ import {
   RenderRemarkNumber,
   RenderRemarkProject,
   RenderCellCreatedAt,
-} from '../desing-table-row';
+} from '../../desing-table-row';
 
 // ----------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ const HIDE_COLUMNS_TOGGLABLE = ['category', 'actions'];
 
 // ----------------------------------------------------------------------
 
-export default function DesingListView() {
+export default function DocumentsListView() {
   const { enqueueSnackbar } = useSnackbar();
 
   const confirmRows = useBoolean();
@@ -95,6 +95,7 @@ export default function DesingListView() {
 
   useEffect(() => {
     if (documents.length) {
+      console.log('documents', documents);
       setTableData(documents);
     }
   }, [documents]);
@@ -138,7 +139,7 @@ export default function DesingListView() {
 
   const handleEditRow = useCallback(
     (id) => {
-      router.push(paths.dashboard.desing.edit(id));
+      router.push(paths.dashboard.design.documents.edit(id));
     },
     [router]
   );
@@ -149,94 +150,42 @@ export default function DesingListView() {
     },
     [router]
   );
-
   const columns = [
-    // {
-    //   field: 'category',
-    //   headerName: 'Category',
-    //   filterable: false,
-    // },
     {
-      field: 'Document Number',
+      field: 'documentNo',
       headerName: 'Document Number',
       width: 180,
-      editable: false,
-      renderCell: (params) => <RenderRemarkNumber params={params} />,
     },
     {
-      field: 'Project',
+      field: 'projectCode',
       headerName: 'Project',
       width: 140,
-      editable: false,
-      renderCell: (params) => <RenderRemarkProject params={params} />,
     },
     {
-      field: 'Type',
+      field: 'type',
       headerName: 'Type',
       width: 140,
-      editable: false,
-      renderCell: (params) => <RenderRemarkType params={params} />,
     },
     {
-      field: 'Topic',
-      headerName: 'Topic',
-      width: 140,
-      editable: true,
-      renderCell: (params) => <RenderRemarkOwner params={params} />,
-    },
-    {
-      field: 'State',
-      headerName: 'State',
-      width: 140,
-      editable: true,
-      renderCell: (params) => <RenderRemarkWriter params={params} />,
-    },
-    {
-      field: 'Title',
+      field: 'title',
       headerName: 'Title',
-      width: 140,
-      editable: true,
-      renderCell: (params) => <RenderRemarkTitle params={params} />,
+      width: 200,
     },
-    // {
-    //   field: 'name',
-    //   headerName: 'Desing',
-    //   flex: 1,
-    //   minWidth: 360,
-    //   hideable: false,
-    //   renderCell: (params) => <RenderCellDesing params={params} />,
-    // },
-
+    {
+      field: 'status',
+      headerName: 'Status',
+      width: 120,
+    },
+    {
+      field: 'approvalStatus',
+      headerName: 'Approval',
+      width: 160,
+    },
     {
       field: 'createdAt',
-      headerName: 'Create at',
-      width: 160,
-      renderCell: (params) => <RenderCellCreatedAt params={params} />,
-    },
-    // {
-    //   field: 'inventoryType',
-    //   headerName: 'Stock',
-    //   width: 160,
-    //   type: 'singleSelect',
-    //   valueOptions: PRODUCT_STOCK_OPTIONS,
-    //   renderCell: (params) => <RenderCellStock params={params} />,
-    // },
-    // {
-    //   field: 'price',
-    //   headerName: 'Price',
-    //   width: 140,
-    //   editable: true,
-    //   renderCell: (params) => <RenderCellPrice params={params} />,
-    // },
-
-    {
-      field: 'publish',
-      headerName: 'Publish',
-      width: 110,
-      type: 'singleSelect',
-      editable: true,
-      valueOptions: PUBLISH_OPTIONS,
-      renderCell: (params) => <RenderCellPublish params={params} />,
+      headerName: 'Created At',
+      width: 180,
+      valueGetter: (params) => new Date(params.row.createdAt).toLocaleString(),
     },
     {
       type: 'actions',
@@ -253,20 +202,20 @@ export default function DesingListView() {
           showInMenu
           icon={<Iconify icon="solar:eye-bold" />}
           label="View"
-          onClick={() => handleViewRow(params.row.id)}
+          onClick={() => handleViewRow(params.row._id)}
         />,
         <GridActionsCellItem
           showInMenu
           icon={<Iconify icon="solar:pen-bold" />}
           label="Edit"
-          onClick={() => handleEditRow(params.row.id)}
+          onClick={() => handleEditRow(params.row._id)}
         />,
         <GridActionsCellItem
           showInMenu
           icon={<Iconify icon="solar:trash-bin-trash-bold" />}
           label="Delete"
           onClick={() => {
-            handleDeleteRow(params.row.id);
+            handleDeleteRow(params.row._id);
           }}
           sx={{ color: 'error.main' }}
         />,
@@ -309,11 +258,11 @@ export default function DesingListView() {
           action={
             <Button
               component={RouterLink}
-              href={paths.dashboard.design.new}
+              href={paths.dashboard.design.documents.new}
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
             >
-              New Rema
+              New Document
             </Button>
           }
           sx={{
@@ -369,6 +318,7 @@ export default function DesingListView() {
             ))}
           </Tabs>
           <DataGrid
+            getRowId={(row) => row._id}
             checkboxSelection
             disableRowSelectionOnClick
             rows={dataFiltered}

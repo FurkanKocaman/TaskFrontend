@@ -11,6 +11,15 @@ axiosInstance.interceptors.response.use(
   (error) => Promise.reject((error.response && error.response.data) || 'Something went wrong')
 );
 
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 export default axiosInstance;
 
 // ----------------------------------------------------------------------
@@ -49,5 +58,14 @@ export const endpoints = {
     list: '/api/product/list',
     details: '/api/product/details',
     search: '/api/product/search',
+  },
+  projects: {
+    list: '/api/product/list',
+    details: '/api/product/details',
+    search: '/api/product/search',
+  },
+  documents: {
+    post: '/api/documents/',
+    get: '/api/documents',
   },
 };

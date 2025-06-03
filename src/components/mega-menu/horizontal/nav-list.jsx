@@ -22,7 +22,6 @@ export default function NavList({ data, slotProps }) {
   const navRef = useRef(null);
 
   const pathname = usePathname();
-
   const active = useActiveLink(data.path, !!data.children);
 
   const singleList = data.children?.length === 1;

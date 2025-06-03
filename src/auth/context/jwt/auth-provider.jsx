@@ -53,6 +53,7 @@ export function AuthProvider({ children }) {
 
         const data = await response.json();
         const { user } = data;
+        console.log('User', user);
 
         dispatch({
           type: 'INITIAL',
@@ -157,23 +158,20 @@ export function AuthProvider({ children }) {
   const checkAuthenticated = state.user ? 'authenticated' : 'unauthenticated';
   const status = state.loading ? 'loading' : checkAuthenticated;
 
-  const memoizedValue = useMemo(
-    () => {
-      const value = {
-        user: state.user,
-        method: 'jwt',
-        loading: status === 'loading',
-        authenticated: status === 'authenticated',
-        unauthenticated: status === 'unauthenticated',
-        login,
-        register,
-        logout,
-      };
-      console.log('Auth context value:', value);
-      return value;
-    },
-    [login, logout, register, state.user, status]
-  );
+  const memoizedValue = useMemo(() => {
+    const value = {
+      user: state.user,
+      method: 'jwt',
+      loading: status === 'loading',
+      authenticated: status === 'authenticated',
+      unauthenticated: status === 'unauthenticated',
+      login,
+      register,
+      logout,
+    };
+    console.log('Auth context value:', value);
+    return value;
+  }, [login, logout, register, state.user, status]);
 
   return <AuthContext.Provider value={memoizedValue}>{children}</AuthContext.Provider>;
 }

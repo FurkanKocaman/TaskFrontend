@@ -12,6 +12,9 @@ import { LoadingScreen } from 'src/components/loading-screen';
 const SpoolFollowPage = lazy(
   () => import('src/pages/dashboard/construction/pipe-follow/spool-follow')
 );
+const DocumentsPage = lazy(() => import('src/pages/dashboard/design/documents/documents'));
+
+const DocumentsNewPage = lazy(() => import('src/pages/dashboard/design/documents/documents-new'));
 
 // ----------------------------------------------------------------------
 
@@ -37,12 +40,27 @@ export const dashboardRoutes = [
         children: [
           {
             path: 'pipe-follow',
-            children: [
-              { path: 'spool-follow', element: <SpoolFollowPage /> },
-            ],
+            children: [{ path: 'spool-follow', element: <SpoolFollowPage /> }],
+          },
+        ],
+      },
+      {
+        path: 'design',
+        children: [
+          {
+            path: 'documents',
+            element: <DocumentsPage />,
+          },
+          {
+            path: 'documents/:id/edit',
+            element: <DocumentsNewPage />,
+          },
+          {
+            path: 'documents/new',
+            element: <DocumentsNewPage />,
           },
         ],
       },
     ],
   },
-]; 
+];
