@@ -1,5 +1,6 @@
 import isEqual from 'lodash/isEqual';
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
@@ -77,6 +78,7 @@ const HIDE_COLUMNS_TOGGLABLE = ['category', 'actions'];
 
 export default function DocumentsListView() {
   const { enqueueSnackbar } = useSnackbar();
+  const { t } = useTranslation();
 
   const confirmRows = useBoolean();
 
@@ -121,21 +123,17 @@ export default function DocumentsListView() {
   const handleDeleteRow = useCallback(
     (id) => {
       const deleteRow = tableData.filter((row) => row.id !== id);
-
-      enqueueSnackbar('Delete success!');
-
+      enqueueSnackbar(t('Delete success!'));
       setTableData(deleteRow);
     },
-    [enqueueSnackbar, tableData]
+    [enqueueSnackbar, tableData, t]
   );
 
   const handleDeleteRows = useCallback(() => {
     const deleteRows = tableData.filter((row) => !selectedRowIds.includes(row.id));
-
-    enqueueSnackbar('Delete success!');
-
+    enqueueSnackbar(t('Delete success!'));
     setTableData(deleteRows);
-  }, [enqueueSnackbar, selectedRowIds, tableData]);
+  }, [enqueueSnackbar, selectedRowIds, tableData, t]);
 
   const handleEditRow = useCallback(
     (id) => {
@@ -146,44 +144,44 @@ export default function DocumentsListView() {
 
   const handleViewRow = useCallback(
     (id) => {
-      router.push(paths.dashboard.desing.details(id));
+      router.push(paths.dashboard.design.documents.details(id));
     },
     [router]
   );
   const columns = [
     {
       field: 'documentNo',
-      headerName: 'Document Number',
+      headerName: t('Document Number'),
       width: 180,
     },
     {
       field: 'projectCode',
-      headerName: 'Project',
+      headerName: t('Project'),
       width: 140,
     },
     {
       field: 'type',
-      headerName: 'Type',
+      headerName: t('Type'),
       width: 140,
     },
     {
       field: 'title',
-      headerName: 'Title',
+      headerName: t('Title'),
       width: 200,
     },
     {
       field: 'status',
-      headerName: 'Status',
+      headerName: t('Status'),
       width: 120,
     },
     {
       field: 'approvalStatus',
-      headerName: 'Approval',
+      headerName: t('Approval'),
       width: 160,
     },
     {
       field: 'createdAt',
-      headerName: 'Created At',
+      headerName: t('Created At'),
       width: 180,
       valueGetter: (params) => new Date(params.row.createdAt).toLocaleString(),
     },
@@ -201,19 +199,19 @@ export default function DocumentsListView() {
         <GridActionsCellItem
           showInMenu
           icon={<Iconify icon="solar:eye-bold" />}
-          label="View"
+          label={t('View')}
           onClick={() => handleViewRow(params.row._id)}
         />,
         <GridActionsCellItem
           showInMenu
           icon={<Iconify icon="solar:pen-bold" />}
-          label="Edit"
+          label={t('Edit')}
           onClick={() => handleEditRow(params.row._id)}
         />,
         <GridActionsCellItem
           showInMenu
           icon={<Iconify icon="solar:trash-bin-trash-bold" />}
-          label="Delete"
+          label={t('Delete')}
           onClick={() => {
             handleDeleteRow(params.row._id);
           }}
@@ -246,14 +244,14 @@ export default function DocumentsListView() {
         }}
       >
         <CustomBreadcrumbs
-          heading="List"
+          heading={t('List')}
           links={[
-            { name: 'Dashboard', href: paths.dashboard.root },
+            { name: t('Dashboard'), href: paths.dashboard.root },
             {
-              name: 'Document',
+              name: t('Document'),
               href: paths.dashboard.design.root,
             },
-            { name: 'List' },
+            { name: t('List') },
           ]}
           action={
             <Button
@@ -262,7 +260,7 @@ export default function DocumentsListView() {
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
             >
-              New Document
+              {t('New Document')}
             </Button>
           }
           sx={{
@@ -296,7 +294,7 @@ export default function DocumentsListView() {
                 key={tab.value}
                 iconPosition="end"
                 value={tab.value}
-                label={tab.label}
+                label={t(tab.label)}
                 icon={
                   <Label
                     variant={
@@ -368,7 +366,7 @@ export default function DocumentsListView() {
                           startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
                           onClick={confirmRows.onTrue}
                         >
-                          Delete ({selectedRowIds.length})
+                          {t('Delete')} ({selectedRowIds.length})
                         </Button>
                       )}
 
@@ -389,8 +387,8 @@ export default function DocumentsListView() {
                   )}
                 </>
               ),
-              noRowsOverlay: () => <EmptyContent title="No Data" />,
-              noResultsOverlay: () => <EmptyContent title="No results found" />,
+              noRowsOverlay: () => <EmptyContent title={t('No Data')} />,
+              noResultsOverlay: () => <EmptyContent title={t('No results found')} />,
             }}
             slotProps={{
               columnsPanel: {
@@ -404,10 +402,11 @@ export default function DocumentsListView() {
       <ConfirmDialog
         open={confirmRows.value}
         onClose={confirmRows.onFalse}
-        title="Delete"
+        title={t('Delete')}
         content={
           <>
-            Are you sure want to delete <strong> {selectedRowIds.length} </strong> items?
+            {t('Are you sure want to delete')} <strong> {selectedRowIds.length} </strong>{' '}
+            {t('items?')}
           </>
         }
         action={
@@ -419,7 +418,7 @@ export default function DocumentsListView() {
               confirmRows.onFalse();
             }}
           >
-            Delete
+            {t('Delete')}
           </Button>
         }
       />

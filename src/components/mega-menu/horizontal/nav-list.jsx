@@ -15,6 +15,7 @@ import MenuTags from '../common/menu-tags';
 import NavSubList from '../common/nav-sub-list';
 import MenuProducts from '../common/menu-products';
 import MenuMoreLink from '../common/menu-more-link';
+import { useUserStore } from 'src/store/user-store';
 
 // ----------------------------------------------------------------------
 
@@ -29,6 +30,8 @@ export default function NavList({ data, slotProps }) {
   const [openMenu, setOpenMenu] = useState(false);
 
   const [rectTop, setRectTop] = useState(0);
+
+  const { user } = useUserStore();
 
   useEffect(() => {
     if (openMenu) {

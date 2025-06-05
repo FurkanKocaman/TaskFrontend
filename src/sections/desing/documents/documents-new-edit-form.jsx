@@ -4,6 +4,7 @@ import { parseISO } from 'date-fns';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, Controller } from 'react-hook-form';
 import { useMemo, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -28,6 +29,8 @@ import FormProvider, {
   RHFUpload,
   RHFTextField,
 } from 'src/components/hook-form';
+import { Button } from '@mui/material';
+import { useUserStore } from 'src/store/user-store';
 
 const DESING_CATEGORY_GROUP_OPTIONS = [
   {
@@ -68,8 +71,6 @@ const DESING_Project_GROUP_OPTIONS = [
 ];
 
 export default function DocumentsNewEditForm({ currentDocument }) {
-  console.log('currentDocument', currentDocument);
-
   DocumentsNewEditForm.propTypes = {
     currentDocument: PropTypes.object,
   };
@@ -80,17 +81,21 @@ export default function DocumentsNewEditForm({ currentDocument }) {
 
   const { enqueueSnackbar } = useSnackbar();
 
+  const { user } = useUserStore();
+
+  const { t } = useTranslation();
+
   const NewDocumnetSchema = Yup.object().shape({
-    projectName: Yup.string().required('Project name is required'),
-    documentType: Yup.string().required('Document type is required'),
-    documentNo: Yup.string().required('Document number is required'),
-    documentTopic: Yup.string().required('Document topic is required'),
-    contractDate: Yup.date().required('Contract date is required'),
-    revisionNumber: Yup.number().required('Revision number is required'),
-    status: Yup.string().required('Status is required'),
-    approvalStatus: Yup.string().required('Approval status is required'),
-    description: Yup.string().required('Description is required'),
-    files: Yup.array().min(1, 'Files is required'),
+    projectName: Yup.string().required(t('Project name is required')),
+    documentType: Yup.string().required(t('Document type is required')),
+    documentNo: Yup.string().required(t('Document number is required')),
+    documentTopic: Yup.string().required(t('Document topic is required')),
+    contractDate: Yup.date().required(t('Contract date is required')),
+    revisionNumber: Yup.number().required(t('Revision number is required')),
+    status: Yup.string().required(t('Status is required')),
+    approvalStatus: Yup.string().required(t('Approval status is required')),
+    description: Yup.string().required(t('Description is required')),
+    files: Yup.array().min(1, t('Files is required')),
   });
 
   const defaultValues = useMemo(
@@ -144,23 +149,23 @@ export default function DocumentsNewEditForm({ currentDocument }) {
         data.contractDate ? new Date(data.contractDate).toISOString() : ''
       );
       formData.append('description', data.description);
-      formData.append('createdBy', 'admin');
+      formData.append('createdBy', user.email);
 
       if (data.files.length > 0) {
         formData.append('documentFile', data.files[0]);
       } else {
-        enqueueSnackbar('Lütfen bir dosya ekleyin', { variant: 'error' });
+        enqueueSnackbar(t('Please add a file'), { variant: 'error' });
         return;
       }
-
+      console.log('formData', formData);
       await postDocumentWithFile(formData);
 
-      enqueueSnackbar('Doküman başarıyla oluşturuldu!');
+      enqueueSnackbar(t('Document created successfully!'));
       reset();
       router.push(paths.dashboard.design.documents.root);
     } catch (error) {
       console.error(error);
-      enqueueSnackbar(error?.message || 'Bir hata oluştu', { variant: 'error' });
+      enqueueSnackbar(error?.message || t('An error occurred'), { variant: 'error' });
     }
   });
 
@@ -209,10 +214,10 @@ export default function DocumentsNewEditForm({ currentDocument }) {
                 <RHFSelect
                   native
                   name="projectName"
-                  label="Project Name"
+                  label={t('Project Name')}
                   InputLabelProps={{ shrink: true }}
                 >
-                  <option value="">Select a project</option>
+                  <option value="">{t('Select a project')}</option>
                   {DESING_Project_GROUP_OPTIONS.map((category) =>
                     category.classify.map((classify) => (
                       <option key={classify} value={classify}>
@@ -224,10 +229,10 @@ export default function DocumentsNewEditForm({ currentDocument }) {
                 <RHFSelect
                   native
                   name="documentType"
-                  label="Document Type"
+                  label={t('Document Type')}
                   InputLabelProps={{ shrink: true }}
                 >
-                  <option value="">Select document type</option>
+                  <option value="">{t('Select document type')}</option>
                   {DESING_CATEGORY_GROUP_OPTIONS.map((category) =>
                     category.classify.map((classify) => (
                       <option key={classify} value={classify}>
@@ -237,15 +242,15 @@ export default function DocumentsNewEditForm({ currentDocument }) {
                   )}
                 </RHFSelect>
 
-                <RHFTextField name="documentNo" label="Document number" />
-                <RHFTextField name="documentTopic" label="Document Topic" />
+                <RHFTextField name="documentNo" label={t('Document number')} />
+                <RHFTextField name="documentTopic" label={t('Document Topic')} />
 
                 <Controller
                   name="contractDate"
                   control={control}
                   render={({ field, fieldState: { error } }) => (
                     <DatePicker
-                      label="Due Date"
+                      label={t('Due Date')}
                       value={field.value}
                       onChange={(newValue) => {
                         field.onChange(newValue);
@@ -260,9 +265,14 @@ export default function DocumentsNewEditForm({ currentDocument }) {
                     />
                   )}
                 />
-                <RHFTextField name="revisionNumber" label="Revision number" />
-                <RHFSelect native name="status" label="Status" InputLabelProps={{ shrink: true }}>
-                  <option value="">Select status</option>
+                <RHFTextField name="revisionNumber" label={t('Revision number')} />
+                <RHFSelect
+                  native
+                  name="status"
+                  label={t('Status')}
+                  InputLabelProps={{ shrink: true }}
+                >
+                  <option value="">{t('Select status')}</option>
                   {DOCUMENT_STATUS_OPTIONS.map((category) =>
                     category.classify.map((classify) => (
                       <option key={classify} value={classify}>
@@ -274,10 +284,10 @@ export default function DocumentsNewEditForm({ currentDocument }) {
                 <RHFSelect
                   native
                   name="approvalStatus"
-                  label="Approval Status"
+                  label={t('Approval Status')}
                   InputLabelProps={{ shrink: true }}
                 >
-                  <option value="">Select approval status</option>
+                  <option value="">{t('Select approval status')}</option>
                   {DOCUMENT_APPROVAL_STATUS_OPTIONS.map((category) =>
                     category.classify.map((classify) => (
                       <option key={classify} value={classify}>
@@ -298,12 +308,12 @@ export default function DocumentsNewEditForm({ currentDocument }) {
           <Card>
             <Stack spacing={3} sx={{ p: 3 }}>
               <Stack spacing={1.5}>
-                <Typography variant="subtitle2">Description</Typography>
+                <Typography variant="subtitle2">{t('Description')}</Typography>
                 <RHFEditor simple name="description" />
               </Stack>
 
               <Stack spacing={1.5}>
-                <Typography variant="subtitle2">Files</Typography>
+                <Typography variant="subtitle2">{t('Files')}</Typography>
                 <RHFUpload
                   multiple
                   thumbnail
@@ -327,9 +337,12 @@ export default function DocumentsNewEditForm({ currentDocument }) {
       <Grid md={4} />
       <Grid xs={12} md={8} sx={{ display: 'flex', alignItems: 'center' }}>
         <Grid sx={{ flexGrow: 1, pl: 12 }} />
+        <Button color="inherit" onClick={() => router.push(paths.dashboard.design.documents.root)}>
+          {t('Cancel')}
+        </Button>
 
         <LoadingButton type="submit" variant="contained" size="large" loading={isSubmitting}>
-          {!currentDocument ? 'Create Document' : 'Save Changes'}
+          {!currentDocument ? t('Create Document') : t('Save Changes')}
         </LoadingButton>
       </Grid>
     </>

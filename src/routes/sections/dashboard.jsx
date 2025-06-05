@@ -1,10 +1,13 @@
 import { lazy, Suspense } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Outlet, Navigate } from 'react-router-dom';
 
 import { AuthGuard } from 'src/auth/guard';
 import DashboardLayout from 'src/layouts/dashboard';
+import DocumentDetailsPage from 'src/pages/dashboard/design/documents/documents-detail';
 
 import { LoadingScreen } from 'src/components/loading-screen';
+import RevisionsNewPage from 'src/pages/dashboard/design/revisions/revisions-new';
+import RemarksNewPage from 'src/pages/dashboard/design/remarks/remark-new';
 
 // ----------------------------------------------------------------------
 
@@ -56,8 +59,20 @@ export const dashboardRoutes = [
             element: <DocumentsNewPage />,
           },
           {
+            path: 'documents/:id/revisions',
+            element: <RevisionsNewPage />,
+          },
+          {
             path: 'documents/new',
             element: <DocumentsNewPage />,
+          },
+          {
+            path: 'documents/:id',
+            element: <DocumentDetailsPage />,
+          },
+          {
+            path: 'documents/revisions/:id/remarks',
+            element: <RemarksNewPage />,
           },
         ],
       },

@@ -91,6 +91,17 @@ export const allLangs = [
       currency: 'AED',
     },
   },
+  {
+    label: 'Türkçe',
+    value: 'tr',
+    systemValue: merge(enUSDate, enUSDataGrid, enUSCore),
+    adapterLocale: enUSAdapter,
+    icon: 'flagpack:tr',
+    numberFormat: {
+      code: 'tr-TR',
+      currency: 'TRY',
+    },
+  },
 ];
 
 export const defaultLang = allLangs[0]; // English

@@ -65,7 +65,11 @@ export const endpoints = {
     search: '/api/product/search',
   },
   documents: {
-    post: '/api/documents/',
+    post: '/api/documents',
     get: '/api/documents',
+  },
+  revisions: {
+    post: '/api/revisions',
+    get: '/api/revisions',
   },
 };

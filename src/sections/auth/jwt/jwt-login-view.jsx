@@ -21,13 +21,12 @@ import { useAuthContext } from 'src/auth/hooks';
 import { PATH_AFTER_LOGIN } from 'src/config-global';
 
 import Iconify from 'src/components/iconify';
-import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import FormProvider, { RHFTextField, RHFCheckbox } from 'src/components/hook-form';
 
 // ----------------------------------------------------------------------
 
 export default function JwtLoginView() {
   const { login } = useAuthContext();
-  console.log('login', login);
 
   const router = useRouter();
 
@@ -36,7 +35,6 @@ export default function JwtLoginView() {
   const searchParams = useSearchParams();
 
   const returnTo = searchParams.get('returnTo');
-  console.log('login', returnTo);
 
   const password = useBoolean();
 
@@ -48,6 +46,7 @@ export default function JwtLoginView() {
   const defaultValues = {
     email: 'alper@example.com',
     password: 'examplepassword',
+    remember: false,
   };
 
   const methods = useForm({
@@ -64,13 +63,9 @@ export default function JwtLoginView() {
   const onSubmit = handleSubmit(async (data) => {
     try {
       console.log('data', data);
-      await login?.(data.email, data.password);
-
+      await login?.(data.email, data.password, data.remember);
       router.push(returnTo || PATH_AFTER_LOGIN);
     } catch (error) {
-      console.error(error);
-      // TODO: bu kısım normalde yok login kontrolü üstte burada kontrolü kaldırıyorum alttaki ilk satır silinecek
-      //  router.push(returnTo || PATH_AFTER_LOGIN);
       reset();
       setErrorMsg(typeof error === 'string' ? error : error.message);
     }
@@ -109,9 +104,12 @@ export default function JwtLoginView() {
         }}
       />
 
-      <Link variant="body2" color="inherit" underline="always" sx={{ alignSelf: 'flex-end' }}>
-        Forgot password?
-      </Link>
+      <Stack direction="row" alignItems="center" justifyContent="space-between">
+        <RHFCheckbox name="remember" label="Remember Me" />
+        <Link variant="body2" color="inherit" underline="always" sx={{ alignSelf: 'flex-end' }}>
+          Forgot password?
+        </Link>
+      </Stack>
 
       <LoadingButton
         fullWidth
@@ -121,7 +119,7 @@ export default function JwtLoginView() {
         variant="contained"
         loading={isSubmitting}
       >
-        Login1
+        Login
       </LoadingButton>
     </Stack>
   );

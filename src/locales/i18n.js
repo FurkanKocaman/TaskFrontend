@@ -10,6 +10,7 @@ import translationFr from './langs/fr.json';
 import translationVi from './langs/vi.json';
 import translationCn from './langs/cn.json';
 import translationAr from './langs/ar.json';
+import translationTr from './langs/tr.json';
 
 // ----------------------------------------------------------------------
 
@@ -25,6 +26,7 @@ i18n
       vi: { translations: translationVi },
       cn: { translations: translationCn },
       ar: { translations: translationAr },
+      tr: { translations: translationTr },
     },
     lng,
     fallbackLng: 'en',

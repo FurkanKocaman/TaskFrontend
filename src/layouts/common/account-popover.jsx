@@ -17,6 +17,7 @@ import { useAuthContext } from 'src/auth/hooks';
 import { varHover } from 'src/components/animate';
 import { useSnackbar } from 'src/components/snackbar';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
+import { useUserStore } from 'src/store/user-store';
 
 // ----------------------------------------------------------------------
 
@@ -32,7 +33,9 @@ const OPTIONS = [
 export default function AccountPopover() {
   const router = useRouter();
 
-  const { user, logout } = useAuthContext();
+  const { logout } = useAuthContext();
+
+  const { user } = useUserStore();
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -55,7 +58,7 @@ export default function AccountPopover() {
   };
 
   // Eğer user yoksa, default değerler kullan
-  const displayName = user?.displayName || user?.name || 'User';
+  const displayName = user?.fullName || user?.name || 'User';
   const email = user?.email || 'user@example.com';
   const photoURL = user?.photoURL || user?.avatar;
 
