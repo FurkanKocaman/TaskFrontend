@@ -20,23 +20,22 @@ export default function DesingTableFiltersResult({
   results,
   ...other
 }) {
-  const handleRemoveStock = useCallback(
-    (inputValue) => {
-      const newValue = filters.stock.filter((item) => item !== inputValue);
+  // Her filtre için silme fonksiyonları
+  const handleRemoveProject = useCallback(() => {
+    onFilters('project', '');
+  }, [onFilters]);
 
-      onFilters('stock', newValue);
-    },
-    [filters.stock, onFilters]
-  );
+  const handleRemoveType = useCallback(() => {
+    onFilters('type', '');
+  }, [onFilters]);
 
-  const handleRemovePublish = useCallback(
-    (inputValue) => {
-      const newValue = filters.publish.filter((item) => item !== inputValue);
+  const handleRemoveStatus = useCallback(() => {
+    onFilters('status', 'all');
+  }, [onFilters]);
 
-      onFilters('publish', newValue);
-    },
-    [filters.publish, onFilters]
-  );
+  const handleRemoveDateRange = useCallback(() => {
+    onFilters('dateRange', [null, null]);
+  }, [onFilters]);
 
   return (
     <Stack spacing={1.5} {...other}>
@@ -48,27 +47,34 @@ export default function DesingTableFiltersResult({
       </Box>
 
       <Stack flexGrow={1} spacing={1} direction="row" flexWrap="wrap" alignItems="center">
-        {!!filters.stock.length && (
-          <Block label="Stock:">
-            {filters.stock.map((item) => (
-              <Chip key={item} label={item} size="small" onDelete={() => handleRemoveStock(item)} />
-            ))}
+        {!!filters.project && (
+          <Block label="Proje:">
+            <Chip label={filters.project} size="small" onDelete={handleRemoveProject} />
           </Block>
         )}
-
-        {!!filters.publish.length && (
-          <Block label="Publish:">
-            {filters.publish.map((item) => (
-              <Chip
-                key={item}
-                label={item}
-                size="small"
-                onDelete={() => handleRemovePublish(item)}
-              />
-            ))}
+        {!!filters.type && (
+          <Block label="Tip:">
+            <Chip label={filters.type} size="small" onDelete={handleRemoveType} />
           </Block>
         )}
-
+        {!!filters.status && filters.status !== 'all' && (
+          <Block label="Durum:">
+            <Chip label={filters.status} size="small" onDelete={handleRemoveStatus} />
+          </Block>
+        )}
+        {filters.dateRange && (filters.dateRange[0] || filters.dateRange[1]) && (
+          <Block label="Tarih:">
+            <Chip
+              label={`$${
+                filters.dateRange[0] ? new Date(filters.dateRange[0]).toLocaleDateString() : ''
+              } - ${
+                filters.dateRange[1] ? new Date(filters.dateRange[1]).toLocaleDateString() : ''
+              }`}
+              size="small"
+              onDelete={handleRemoveDateRange}
+            />
+          </Block>
+        )}
         <Button
           color="error"
           onClick={onResetFilters}

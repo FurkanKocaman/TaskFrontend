@@ -6,10 +6,13 @@ import Collapse from '@mui/material/Collapse';
 import ListSubheader from '@mui/material/ListSubheader';
 
 import NavList from './nav-list';
+import { useUserStore } from 'src/store/user-store';
 
 // ----------------------------------------------------------------------
 
 function NavSectionVertical({ data, slotProps, ...other }) {
+  const { user } = useUserStore();
+
   return (
     <Stack component="nav" id="nav-section-vertical" {...other}>
       {data.map((group, index) => (
@@ -35,6 +38,7 @@ export default memo(NavSectionVertical);
 
 function Group({ subheader, items, slotProps }) {
   const [open, setOpen] = useState(true);
+  const { user } = useUserStore();
 
   const handleToggle = useCallback(() => {
     setOpen((prev) => !prev);

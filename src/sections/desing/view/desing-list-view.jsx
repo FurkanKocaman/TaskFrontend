@@ -24,7 +24,7 @@ import { RouterLink } from 'src/routes/components';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { useGetDesings } from 'src/api/desing';
+import { useGetDesings, useGetDocuments } from 'src/api/desing';
 import { ORDER_STATUS_OPTIONS, PRODUCT_STOCK_OPTIONS } from 'src/_mock';
 
 import Label from 'src/components/label';
@@ -64,6 +64,7 @@ const PUBLISH_OPTIONS = [
 const defaultFilters = {
   publish: [],
   stock: [],
+  status: 'all',
 };
 
 const HIDE_COLUMNS = {
@@ -82,8 +83,7 @@ export default function DesingListView() {
   const router = useRouter();
 
   const settings = useSettingsContext();
-
-  const { desings, desingsLoading } = useGetDesings();
+  const { documents, documentsLoading } = useGetDocuments();
 
   const [tableData, setTableData] = useState([]);
 
@@ -94,10 +94,10 @@ export default function DesingListView() {
   const [columnVisibilityModel, setColumnVisibilityModel] = useState(HIDE_COLUMNS);
 
   useEffect(() => {
-    if (desings.length) {
-      setTableData(desings);
+    if (documents.length) {
+      setTableData(documents);
     }
-  }, [desings]);
+  }, [documents]);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -289,7 +289,7 @@ export default function DesingListView() {
   return (
     <>
       <Container
-        maxWidth={settings.themeStretch ? false : 'lg'}
+        maxWidth={settings.themeStretch ? false : 'xl'}
         sx={{
           flexGrow: 1,
           display: 'flex',
@@ -302,14 +302,14 @@ export default function DesingListView() {
             { name: 'Dashboard', href: paths.dashboard.root },
             {
               name: 'Document',
-              href: paths.dashboard.desing.root,
+              href: paths.dashboard.design.root,
             },
             { name: 'List' },
           ]}
           action={
             <Button
               component={RouterLink}
-              href={paths.dashboard.desing.new}
+              href={paths.dashboard.design.new}
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
             >
@@ -373,7 +373,7 @@ export default function DesingListView() {
             disableRowSelectionOnClick
             rows={dataFiltered}
             columns={columns}
-            loading={desingsLoading}
+            loading={documentsLoading}
             getRowHeight={() => 'auto'}
             pageSizeOptions={[5, 10, 25]}
             initialState={{

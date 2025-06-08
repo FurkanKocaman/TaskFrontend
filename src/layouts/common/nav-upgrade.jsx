@@ -3,15 +3,14 @@ import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 
-import { useMockedUser } from 'src/hooks/use-mocked-user';
-
 import Label from 'src/components/label';
+import { useUserStore } from 'src/store/user-store';
 
 // ----------------------------------------------------------------------
 
 export default function NavUpgrade() {
-  const { user } = useMockedUser();
-
+  const { user } = useUserStore();
+  console.log('NEWUSER', user);
   return (
     <Stack
       sx={{
@@ -44,7 +43,7 @@ export default function NavUpgrade() {
 
         <Stack spacing={0.5} sx={{ mb: 2, mt: 1.5, width: 1 }}>
           <Typography variant="subtitle2" noWrap>
-            {user?.displayName}
+            {user?.fullName}
           </Typography>
 
           <Typography variant="body2" noWrap sx={{ color: 'text.disabled' }}>

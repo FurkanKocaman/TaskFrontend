@@ -1,10 +1,14 @@
 import { lazy, Suspense } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Outlet, Navigate } from 'react-router-dom';
 
 import { AuthGuard } from 'src/auth/guard';
 import DashboardLayout from 'src/layouts/dashboard';
+import DocumentDetailsPage from 'src/pages/dashboard/design/documents/documents-detail';
 
 import { LoadingScreen } from 'src/components/loading-screen';
+import RevisionsNewPage from 'src/pages/dashboard/design/revisions/revisions-new';
+import RemarksNewPage from 'src/pages/dashboard/design/remarks/remark-new';
+import ProjectsSummaryPage from 'src/pages/dashboard/design/projects/projects-summary';
 
 // ----------------------------------------------------------------------
 
@@ -12,6 +16,9 @@ import { LoadingScreen } from 'src/components/loading-screen';
 const SpoolFollowPage = lazy(
   () => import('src/pages/dashboard/construction/pipe-follow/spool-follow')
 );
+const DocumentsPage = lazy(() => import('src/pages/dashboard/design/documents/documents'));
+
+const DocumentsNewPage = lazy(() => import('src/pages/dashboard/design/documents/documents-new'));
 
 // ----------------------------------------------------------------------
 
@@ -37,12 +44,47 @@ export const dashboardRoutes = [
         children: [
           {
             path: 'pipe-follow',
-            children: [
-              { path: 'spool-follow', element: <SpoolFollowPage /> },
-            ],
+            children: [{ path: 'spool-follow', element: <SpoolFollowPage /> }],
+          },
+        ],
+      },
+      {
+        path: 'design',
+        children: [
+          {
+            path: 'documents',
+            element: <DocumentsPage />,
+          },
+          {
+            path: 'documents/:id/edit',
+            element: <DocumentsNewPage />,
+          },
+          {
+            path: 'documents/:id/revisions',
+            element: <RevisionsNewPage />,
+          },
+          {
+            path: 'documents/:id/revisions/:revisionId/edit',
+            element: <RevisionsNewPage />,
+          },
+          {
+            path: 'documents/new',
+            element: <DocumentsNewPage />,
+          },
+          {
+            path: 'documents/:id',
+            element: <DocumentDetailsPage />,
+          },
+          {
+            path: 'documents/revisions/:id/remarks',
+            element: <RemarksNewPage />,
+          },
+          {
+            path: 'projects/summary',
+            element: <ProjectsSummaryPage />,
           },
         ],
       },
     ],
   },
-]; 
+];

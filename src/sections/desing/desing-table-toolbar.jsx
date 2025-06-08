@@ -7,23 +7,18 @@ import Checkbox from '@mui/material/Checkbox';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import OutlinedInput from '@mui/material/OutlinedInput';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import Stack from '@mui/material/Stack';
 
 import Iconify from 'src/components/iconify';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 
 // ----------------------------------------------------------------------
 
-export default function DesingTableToolbar({
-  filters,
-  onFilters,
-  //
-  stockOptions,
-  publishOptions,
-}) {
+export default function DesingTableToolbar({ filters, onFilters, stockOptions, publishOptions }) {
   const popover = usePopover();
 
   const [stock, setStock] = useState(filters.stock);
-
   const [publish, setPublish] = useState(filters.publish);
 
   const handleChangeStock = useCallback((event) => {
@@ -56,8 +51,7 @@ export default function DesingTableToolbar({
           width: { xs: 1, md: 180 },
         }}
       >
-        <InputLabel>Project</InputLabel>
-
+        <InputLabel>Stock</InputLabel>
         <Select
           multiple
           value={stock}
@@ -82,8 +76,7 @@ export default function DesingTableToolbar({
           width: { xs: 1, md: 180 },
         }}
       >
-        <InputLabel>Status</InputLabel>
-
+        <InputLabel>Publish</InputLabel>
         <Select
           multiple
           value={publish}

@@ -9,6 +9,7 @@ import { useLocales, useTranslate } from 'src/locales';
 import Iconify from 'src/components/iconify';
 import { varHover } from 'src/components/animate';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
+import CheckIcon from '@mui/icons-material/Check';
 
 // ----------------------------------------------------------------------
 
@@ -52,10 +53,11 @@ export default function LanguagePopover() {
             key={option.value}
             selected={option.value === currentLang.value}
             onClick={() => handleChangeLang(option.value)}
+            sx={{ fontWeight: option.value === currentLang.value ? 'bold' : 'normal' }}
           >
-            <Iconify icon={option.icon} sx={{ borderRadius: 0.65, width: 28 }} />
-
+            <Iconify icon={option.icon} sx={{ borderRadius: 0.65, width: 28, mr: 1 }} />
             {option.label}
+            {option.value === currentLang.value && <CheckIcon fontSize="small" sx={{ ml: 1 }} />}
           </MenuItem>
         ))}
       </CustomPopover>

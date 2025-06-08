@@ -4,7 +4,7 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import { useTheme } from '@mui/material/styles';
 
-import { useMockedUser } from 'src/hooks/use-mocked-user';
+import { useUserStore } from 'src/store/user-store';
 
 import { bgBlur } from 'src/theme/css';
 
@@ -20,7 +20,7 @@ import HeaderShadow from '../common/header-shadow';
 function NavHorizontal() {
   const theme = useTheme();
 
-  const { user } = useMockedUser();
+  const { user } = useUserStore();
 
   const navData = useNavData();
 

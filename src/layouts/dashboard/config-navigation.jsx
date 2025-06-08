@@ -19,6 +19,7 @@ const icon = (name) => (
 
 const ICONS = {
   analytics: icon('ic_analytics'),
+  design: icon('ic_dashboard'),
 };
 
 // ----------------------------------------------------------------------
@@ -49,6 +50,19 @@ export function useNavData() {
                     path: paths.dashboard.construction.pipeFollow.spoolFollow,
                   },
                 ],
+              },
+            ],
+          },
+          // Design
+          {
+            title: 'Design Module',
+            path: paths.dashboard.design.root,
+            icon: ICONS.design,
+            children: [
+              {
+                title: 'Document View System',
+                path: paths.dashboard.design.documents.root,
+                icon: <Iconify icon="mdi:drive-document" />,
               },
             ],
           },

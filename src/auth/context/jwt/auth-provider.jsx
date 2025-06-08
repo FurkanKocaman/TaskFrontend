@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { useMemo, useEffect, useReducer, useCallback } from 'react';
-
+import axiosInstance, { endpoints } from 'src/utils/axios';
+import { useUserStore } from 'src/store/user-store';
 import { AuthContext } from './auth-context';
 import { setSession, isValidToken } from './utils';
 
@@ -29,30 +30,35 @@ const reducer = (state, action) => {
 
 const STORAGE_KEY = 'accessToken';
 
+function getToken() {
+  return localStorage.getItem(STORAGE_KEY) || sessionStorage.getItem(STORAGE_KEY);
+}
+
+function getTokenSource() {
+  if (localStorage.getItem(STORAGE_KEY)) return 'local';
+  if (sessionStorage.getItem(STORAGE_KEY)) return 'session';
+  return null;
+}
+
 export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const { setUser } = useUserStore();
 
   const initialize = useCallback(async () => {
     try {
-      const accessToken = sessionStorage.getItem(STORAGE_KEY);
-
+      const accessToken = getToken();
+      const tokenSource = getTokenSource();
       if (accessToken && isValidToken(accessToken)) {
-        setSession(accessToken);
-
-        const response = await fetch('http://localhost:3000/api/auth/me', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-
-        if (!response.ok) {
+        setSession(accessToken, tokenSource === 'local');
+        let user;
+        try {
+          const response = await axiosInstance.get(endpoints.auth.me);
+          user = response.data.data.user;
+          console.log('MeResponse', user);
+          setUser(user);
+        } catch (err) {
           throw new Error('Failed to fetch user');
         }
-
-        const data = await response.json();
-        const { user } = data;
 
         dispatch({
           type: 'INITIAL',
@@ -80,13 +86,13 @@ export function AuthProvider({ children }) {
         },
       });
     }
-  }, []);
+  }, [setUser]);
 
   useEffect(() => {
     initialize();
   }, [initialize]);
 
-  const login = useCallback(async (email, password) => {
+  const login = useCallback(async (email, password, remember = false) => {
     const data = { email, password };
     const response = await fetch('http://localhost:3000/api/auth/login', {
       method: 'POST',
@@ -101,12 +107,10 @@ export function AuthProvider({ children }) {
       throw new Error(errorData.message || 'Login failed');
     }
     const responseData = await response.json();
-    const { accessToken, user } = responseData;
+    const { accessToken, user } = responseData.data;
 
-    console.log('responsedata', responseData);
-
-    setSession(accessToken);
-
+    setSession(accessToken, remember);
+    setUser(user);
     dispatch({
       type: 'LOGIN',
       payload: {
@@ -157,23 +161,20 @@ export function AuthProvider({ children }) {
   const checkAuthenticated = state.user ? 'authenticated' : 'unauthenticated';
   const status = state.loading ? 'loading' : checkAuthenticated;
 
-  const memoizedValue = useMemo(
-    () => {
-      const value = {
-        user: state.user,
-        method: 'jwt',
-        loading: status === 'loading',
-        authenticated: status === 'authenticated',
-        unauthenticated: status === 'unauthenticated',
-        login,
-        register,
-        logout,
-      };
-      console.log('Auth context value:', value);
-      return value;
-    },
-    [login, logout, register, state.user, status]
-  );
+  const memoizedValue = useMemo(() => {
+    const value = {
+      user: state.user,
+      method: 'jwt',
+      loading: status === 'loading',
+      authenticated: status === 'authenticated',
+      unauthenticated: status === 'unauthenticated',
+      login,
+      register,
+      logout,
+    };
+    console.log('Auth context value:', value);
+    return value;
+  }, [login, logout, register, state.user, status]);
 
   return <AuthContext.Provider value={memoizedValue}>{children}</AuthContext.Provider>;
 }
