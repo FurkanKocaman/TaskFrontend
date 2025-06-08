@@ -140,5 +140,21 @@
   "Status is required": "Durum zorunludur",
   "Approval status is required": "Onay durumu zorunludur",
   "Description is required": "Açıklama zorunludur",
-  "Files is required": "Dosya zorunludur"
+  "Files is required": "Dosya zorunludur",
+  "Arrangement": "Arajman",
+  "Calculation": "Hesap",
+  "Diagram": "Diagram",
+  "Electric": "Elektrik",
+  "Equipment": "Teçhiz",
+  "Steel": "Çelik",
+  "Plan": "Plan",
+  "Procedure": "Prosedür",
+  "Report": "Rapor",
+  "data_entered": "Data Girilmiş",
+  "published": "Yayınlanmış",
+  "class_approval_required": "Klass Onayı Gerekli",
+  "flag_approval_required": "Bayrak Onayı Gerekli",
+  "owner_only": "Sadece Owner",
+  "in_approval": "Onayda",
+  "not_approved": "Onaylanmadı"
 }

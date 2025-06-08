@@ -8,6 +8,7 @@ import DocumentDetailsPage from 'src/pages/dashboard/design/documents/documents-
 import { LoadingScreen } from 'src/components/loading-screen';
 import RevisionsNewPage from 'src/pages/dashboard/design/revisions/revisions-new';
 import RemarksNewPage from 'src/pages/dashboard/design/remarks/remark-new';
+import ProjectsSummaryPage from 'src/pages/dashboard/design/projects/projects-summary';
 
 // ----------------------------------------------------------------------
 
@@ -63,6 +64,10 @@ export const dashboardRoutes = [
             element: <RevisionsNewPage />,
           },
           {
+            path: 'documents/:id/revisions/:revisionId/edit',
+            element: <RevisionsNewPage />,
+          },
+          {
             path: 'documents/new',
             element: <DocumentsNewPage />,
           },
@@ -73,6 +78,10 @@ export const dashboardRoutes = [
           {
             path: 'documents/revisions/:id/remarks',
             element: <RemarksNewPage />,
+          },
+          {
+            path: 'projects/summary',
+            element: <ProjectsSummaryPage />,
           },
         ],
       },

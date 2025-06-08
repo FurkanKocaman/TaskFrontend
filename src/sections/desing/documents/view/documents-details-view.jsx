@@ -245,7 +245,7 @@ export default function DocumentDetailsView({ document, revisions }) {
                               color="info"
                               sx={{ ml: 1 }}
                               component={RouterLink}
-                              href={paths.dashboard.design.documents.revisions(document._id)}
+                              href={`/dashboard/design/documents/${document._id}/revisions/${revision._id}/edit`}
                             >
                               {t('Edit')}
                             </Button>

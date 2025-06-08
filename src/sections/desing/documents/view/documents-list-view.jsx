@@ -1,5 +1,5 @@
 import isEqual from 'lodash/isEqual';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Tab from '@mui/material/Tab';
@@ -26,7 +26,6 @@ import { RouterLink } from 'src/routes/components';
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { useGetDocuments } from 'src/api/document';
-import { ORDER_STATUS_OPTIONS, PRODUCT_STOCK_OPTIONS } from 'src/_mock';
 
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
@@ -35,37 +34,21 @@ import EmptyContent from 'src/components/empty-content';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
+import Chart, { useChart } from 'src/components/chart';
 
-import DesingTableToolbar from '../../desing-table-toolbar';
+import CardHeader from '@mui/material/CardHeader';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import DesingTableFiltersResult from '../../desing-table-filters-result';
-import {
-  RenderRemarkType,
-  RenderRemarkOwner,
-  RenderCellPublish,
-  RenderRemarkTitle,
-  RenderRemarkWriter,
-  RenderRemarkNumber,
-  RenderRemarkProject,
-  RenderCellCreatedAt,
-} from '../../desing-table-row';
+import DocumentsTableToolbar from '../../documents-table-toolbar';
 
 // ----------------------------------------------------------------------
 
-const STATUS_OPTIONS = [{ value: 'all', label: 'All' }, ...ORDER_STATUS_OPTIONS];
-
-const PUBLISH_OPTIONS = [
-  { value: 'published', label: 'Published' },
-  { value: 'draft', label: 'Draft' },
-  { value: 'draft', label: 'In Progress' },
-  { value: 'draft', label: 'Done' },
-  { value: 'draft', label: 'Cancelled' },
-  { value: 'draft', label: 'Approved' },
-];
-
 const defaultFilters = {
-  publish: [],
-  stock: [],
+  project: '',
+  type: '',
   status: 'all',
+  dateRange: [null, null],
 };
 
 const HIDE_COLUMNS = {
@@ -81,30 +64,20 @@ export default function DocumentsListView() {
   const { t } = useTranslation();
 
   const confirmRows = useBoolean();
-
   const router = useRouter();
-
   const settings = useSettingsContext();
-  const { documents, documentsLoading } = useGetDocuments();
-
-  const [tableData, setTableData] = useState([]);
-
   const [filters, setFilters] = useState(defaultFilters);
-
   const [selectedRowIds, setSelectedRowIds] = useState([]);
-
   const [columnVisibilityModel, setColumnVisibilityModel] = useState(HIDE_COLUMNS);
+  // Pagination states
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
 
-  useEffect(() => {
-    if (documents.length) {
-      console.log('documents', documents);
-      setTableData(documents);
-    }
-  }, [documents]);
-
-  const dataFiltered = applyFilter({
-    inputData: tableData,
-    filters,
+  // Fetch documents with filters and pagination from backend
+  const { documents, documentsLoading, totalCount } = useGetDocuments({
+    ...filters,
+    page: page + 1, // Backend expects 1-based page
+    pageSize,
   });
 
   const canReset = !isEqual(defaultFilters, filters);
@@ -122,18 +95,14 @@ export default function DocumentsListView() {
 
   const handleDeleteRow = useCallback(
     (id) => {
-      const deleteRow = tableData.filter((row) => row.id !== id);
       enqueueSnackbar(t('Delete success!'));
-      setTableData(deleteRow);
     },
-    [enqueueSnackbar, tableData, t]
+    [enqueueSnackbar, t]
   );
 
   const handleDeleteRows = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !selectedRowIds.includes(row.id));
     enqueueSnackbar(t('Delete success!'));
-    setTableData(deleteRows);
-  }, [enqueueSnackbar, selectedRowIds, tableData, t]);
+  }, [enqueueSnackbar, t]);
 
   const handleEditRow = useCallback(
     (id) => {
@@ -148,42 +117,86 @@ export default function DocumentsListView() {
     },
     [router]
   );
+
+  const PROJECT_OPTIONS = [
+    { value: '', label: t('All') },
+    ...Array.from(new Set(documents.map((doc) => doc.projectCode))).map((code) => ({
+      value: code,
+      label: t(code),
+    })),
+  ];
+
+  const TYPE_OPTIONS = [
+    { value: '', label: t('All') },
+    ...Array.from(new Set(documents.map((doc) => doc.type))).map((type) => ({
+      value: type,
+      label: t(type),
+    })),
+  ];
+
+  const STATUS_OPTIONS = [
+    { value: 'all', label: t('All') },
+    { value: 'data_entered', label: t('Data Entered') },
+    { value: 'published', label: t('Published') },
+  ];
+
   const columns = [
+    {
+      field: 'projectCode',
+      headerName: t('Project Code'),
+      width: 120,
+    },
     {
       field: 'documentNo',
       headerName: t('Document Number'),
-      width: 180,
-    },
-    {
-      field: 'projectCode',
-      headerName: t('Project'),
-      width: 140,
+      width: 160,
     },
     {
       field: 'type',
       headerName: t('Type'),
-      width: 140,
+      width: 120,
+      valueGetter: (params) => (params.row.type ? t(params.row.type) : '-'),
     },
     {
       field: 'title',
-      headerName: t('Title'),
-      width: 200,
+      headerName: t('Topic'),
+      width: 180,
     },
     {
-      field: 'status',
-      headerName: t('Status'),
+      field: 'currentRevision',
+      headerName: t('Current Revision'),
       width: 120,
+      valueGetter: (params) => params.row.currentRevision || '-',
     },
     {
-      field: 'approvalStatus',
-      headerName: t('Approval'),
-      width: 160,
+      field: 'revisionDate',
+      headerName: t('Revision Date'),
+      width: 140,
+      valueGetter: (params) =>
+        params.row.revisionDate ? new Date(params.row.revisionDate).toLocaleDateString() : '-',
     },
     {
       field: 'createdAt',
       headerName: t('Created At'),
-      width: 180,
-      valueGetter: (params) => new Date(params.row.createdAt).toLocaleString(),
+      width: 140,
+      valueGetter: (params) =>
+        params.row.createdAt ? new Date(params.row.createdAt).toLocaleDateString() : '-',
+    },
+    {
+      field: 'revisionUploader',
+      headerName: t('Uploaded By'),
+      width: 120,
+      valueGetter: (params) => params.row.revisionUploader || '-',
+    },
+    {
+      field: 'status',
+      headerName: t('Status'),
+      width: 140,
+      valueGetter: (params) => {
+        if (params.row.status === 'data_entered') return t('Data Entered');
+        if (params.row.status === 'published') return t('Published');
+        return params.row.status ? t(params.row.status) : '-';
+      },
     },
     {
       type: 'actions',
@@ -200,20 +213,20 @@ export default function DocumentsListView() {
           showInMenu
           icon={<Iconify icon="solar:eye-bold" />}
           label={t('View')}
-          onClick={() => handleViewRow(params.row._id)}
+          onClick={() => handleViewRow(params.row.id)}
         />,
         <GridActionsCellItem
           showInMenu
           icon={<Iconify icon="solar:pen-bold" />}
           label={t('Edit')}
-          onClick={() => handleEditRow(params.row._id)}
+          onClick={() => handleEditRow(params.row.id)}
         />,
         <GridActionsCellItem
           showInMenu
           icon={<Iconify icon="solar:trash-bin-trash-bold" />}
           label={t('Delete')}
           onClick={() => {
-            handleDeleteRow(params.row._id);
+            handleDeleteRow(params.row.id);
           }}
           sx={{ color: 'error.main' }}
         />,
@@ -221,17 +234,40 @@ export default function DocumentsListView() {
     },
   ];
 
-  const handleFilterStatus = useCallback(
-    (event, newValue) => {
-      handleFilters('status', newValue);
-    },
-    [handleFilters]
-  );
-
   const getTogglableColumns = () =>
     columns
       .filter((column) => !HIDE_COLUMNS_TOGGLABLE.includes(column.field))
       .map((column) => column.field);
+
+  // --- SUMMARY CALCULATIONS ---
+  const published = documents.filter((d) => d.approvalStatus === 'published').length;
+  const klassApproved = documents.filter((d) => d.approvalStatus === 'klass').length;
+  const flagApproved = documents.filter((d) => d.approvalStatus === 'flag').length;
+  const onayda = documents.filter((d) =>
+    ['pending', 'approved', 'revised'].includes(d.approvalStatus)
+  ).length;
+  const gecikmis = documents.filter((d) => d.approvalStatus === 'expired').length;
+  const total = documents.length;
+  let dataGirilmis = total - (published + klassApproved + flagApproved + onayda + gecikmis);
+  if (dataGirilmis < 0) dataGirilmis = 0;
+  const donutSeriesRaw = [dataGirilmis, published, klassApproved, flagApproved, onayda, gecikmis];
+  const donutSeries = donutSeriesRaw.every((v) => v === 0) ? [1, 0, 0, 0, 0, 0] : donutSeriesRaw;
+
+  const donutLabels = [
+    'Data Girilmiş',
+    'Yayınlanmış',
+    'Klass Onaylı',
+    'Bayrak Onaylı',
+    'Onayda',
+    'Gecikmiş',
+  ];
+
+  const chartOptions = useChart({
+    labels: donutLabels,
+    legend: { position: 'bottom' },
+    plotOptions: { pie: { donut: { size: '80%' } } },
+    tooltip: { fillSeriesColor: false },
+  });
 
   return (
     <>
@@ -270,133 +306,222 @@ export default function DocumentsListView() {
             },
           }}
         />
-
-        <Card
-          sx={{
-            height: { xs: 'auto', md: 2 },
-            minHeight: { xs: 700 },
-            flexGrow: { md: 1 },
-            display: { md: 'flex' },
-            flexDirection: { md: 'column' },
-            overflow: 'auto', // Add overflow property here
-          }}
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={{ xs: 2, md: 2 }}
+          alignItems="stretch"
+          sx={{ width: '100%' }}
         >
-          <Tabs
-            value={filters.status}
-            onChange={handleFilterStatus}
+          {/* Table Card */}
+          <Box
+            flex={1}
+            minWidth={0}
             sx={{
-              px: 2.5,
-              boxShadow: (theme) => `inset 0 -2px 0 0 ${alpha(theme.palette.grey[500], 0.08)}`,
+              width: '100%',
+              overflowX: { xs: 'auto', md: 'visible' },
+              mb: { xs: 2, md: 0 },
             }}
           >
-            {STATUS_OPTIONS.map((tab) => (
-              <Tab
-                key={tab.value}
-                iconPosition="end"
-                value={tab.value}
-                label={t(tab.label)}
-                icon={
-                  <Label
-                    variant={
-                      ((tab.value === 'all' || tab.value === filters.status) && 'filled') || 'soft'
-                    }
-                    color={
-                      (tab.value === 'completed' && 'success') ||
-                      (tab.value === 'pending' && 'warning') ||
-                      (tab.value === 'cancelled' && 'error') ||
-                      'default'
-                    }
-                  >
-                    {['completed', 'pending', 'cancelled', 'refunded'].includes(tab.value)
-                      ? tableData.filter((user) => user.status === tab.value).length
-                      : tableData.length}
-                  </Label>
-                }
-              />
-            ))}
-          </Tabs>
-          <DataGrid
-            getRowId={(row) => row._id}
-            checkboxSelection
-            disableRowSelectionOnClick
-            rows={dataFiltered}
-            columns={columns}
-            loading={documentsLoading}
-            getRowHeight={() => 'auto'}
-            pageSizeOptions={[5, 10, 25]}
-            initialState={{
-              pagination: {
-                paginationModel: { pageSize: 10 },
-              },
-            }}
-            onRowSelectionModelChange={(newSelectionModel) => {
-              setSelectedRowIds(newSelectionModel);
-            }}
-            columnVisibilityModel={columnVisibilityModel}
-            onColumnVisibilityModelChange={(newModel) => setColumnVisibilityModel(newModel)}
-            slots={{
-              toolbar: () => (
-                <>
-                  <GridToolbarContainer>
-                    <DesingTableToolbar
-                      filters={filters}
-                      onFilters={handleFilters}
-                      stockOptions={PRODUCT_STOCK_OPTIONS}
-                      publishOptions={PUBLISH_OPTIONS}
-                    />
-
-                    <GridToolbarQuickFilter
-                      sx={{
-                        flexShrink: 0,
-                        width: { xs: 1, md: 180 },
-                      }}
-                    />
-
-                    <Stack
-                      spacing={1}
-                      flexGrow={1}
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="flex-end"
-                    >
-                      {!!selectedRowIds.length && (
-                        <Button
-                          size="small"
-                          color="error"
-                          startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
-                          onClick={confirmRows.onTrue}
+            <Card
+              sx={{
+                height: { xs: 'auto', md: 'auto' },
+                minHeight: { xs: 400, md: 700 },
+                flexGrow: 1,
+                display: { md: 'flex' },
+                flexDirection: { md: 'column' },
+                overflow: 'auto',
+                p: { xs: 1, md: 2 },
+                minWidth: 0,
+                boxShadow: { xs: 0, md: 1 },
+              }}
+            >
+              <Tabs
+                value={filters.status}
+                onChange={(event, newValue) => handleFilters('status', newValue)}
+                sx={{
+                  px: { xs: 1, md: 2.5 },
+                  boxShadow: (theme) => `inset 0 -2px 0 0 ${alpha(theme.palette.grey[500], 0.08)}`,
+                }}
+              >
+                {STATUS_OPTIONS.map((tab) => {
+                  let count = documents.length;
+                  if (tab.value === 'published') {
+                    count = documents.filter((user) => user.status === 'published').length;
+                  } else if (tab.value === 'data_entered') {
+                    count = documents.filter((user) => user.status === 'data_entered').length;
+                  }
+                  return (
+                    <Tab
+                      key={tab.value}
+                      iconPosition="end"
+                      value={tab.value}
+                      label={tab.label}
+                      icon={
+                        <Label
+                          variant={(tab.value === filters.status && 'filled') || 'soft'}
+                          color={(tab.value === 'published' && 'success') || 'default'}
                         >
-                          {t('Delete')} ({selectedRowIds.length})
-                        </Button>
-                      )}
-
-                      <GridToolbarColumnsButton />
-                      <GridToolbarFilterButton />
-                      <GridToolbarExport />
-                    </Stack>
-                  </GridToolbarContainer>
-
-                  {canReset && (
-                    <DesingTableFiltersResult
-                      filters={filters}
-                      onFilters={handleFilters}
-                      onResetFilters={handleResetFilters}
-                      results={dataFiltered.length}
-                      sx={{ p: 2.5, pt: 0 }}
+                          {count}
+                        </Label>
+                      }
                     />
-                  )}
-                </>
-              ),
-              noRowsOverlay: () => <EmptyContent title={t('No Data')} />,
-              noResultsOverlay: () => <EmptyContent title={t('No results found')} />,
+                  );
+                })}
+              </Tabs>
+              <Box sx={{ width: '100%', minWidth: { xs: 600, md: 900 }, maxWidth: '100vw' }}>
+                <DataGrid
+                  getRowId={(row) => row.id}
+                  checkboxSelection
+                  disableRowSelectionOnClick
+                  rows={documents}
+                  columns={columns}
+                  loading={documentsLoading}
+                  getRowHeight={() => 'auto'}
+                  pageSizeOptions={[5, 10, 25]}
+                  rowCount={totalCount || documents.length}
+                  pagination
+                  paginationMode="server"
+                  page={page}
+                  pageSize={pageSize}
+                  onPageChange={(newPage) => setPage(newPage)}
+                  onPageSizeChange={(newPageSize) => {
+                    setPageSize(newPageSize);
+                    setPage(0);
+                  }}
+                  localeText={{
+                    noRowsLabel: t('No Data'),
+                    noResultsOverlayLabel: t('No results found'),
+                  }}
+                  sx={{
+                    width: '100%',
+                    minWidth: { xs: 600, md: 900 },
+                    maxWidth: '100vw',
+                  }}
+                  onRowSelectionModelChange={(newSelectionModel) => {
+                    setSelectedRowIds(newSelectionModel);
+                  }}
+                  columnVisibilityModel={columnVisibilityModel}
+                  onColumnVisibilityModelChange={(newModel) => setColumnVisibilityModel(newModel)}
+                  onRowClick={(params, event) => {
+                    if (
+                      event.target.closest('.MuiDataGrid-actionsCell') ||
+                      event.target.closest('[role="menu"]')
+                    ) {
+                      return;
+                    }
+                    handleViewRow(params.row.id);
+                  }}
+                  slots={{
+                    toolbar: () => (
+                      <>
+                        <GridToolbarContainer>
+                          <DocumentsTableToolbar
+                            filters={filters}
+                            onFilters={handleFilters}
+                            projectOptions={PROJECT_OPTIONS}
+                            typeOptions={TYPE_OPTIONS}
+                            statusOptions={STATUS_OPTIONS}
+                          />
+                          <GridToolbarQuickFilter
+                            sx={{
+                              flexShrink: 0,
+                              width: { xs: 1, md: 180 },
+                            }}
+                          />
+                          <Stack
+                            spacing={1}
+                            flexGrow={1}
+                            direction="row"
+                            alignItems="center"
+                            justifyContent="flex-end"
+                          >
+                            {!!selectedRowIds.length && (
+                              <Button
+                                size="small"
+                                color="error"
+                                startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
+                                onClick={confirmRows.onTrue}
+                                sx={{ fontSize: { xs: 12, md: 14 }, px: { xs: 1, md: 2 } }}
+                              >
+                                {t('Delete')} ({selectedRowIds.length})
+                              </Button>
+                            )}
+                            <GridToolbarColumnsButton />
+                            <GridToolbarFilterButton />
+                            <GridToolbarExport />
+                          </Stack>
+                        </GridToolbarContainer>
+                        {canReset && (
+                          <DesingTableFiltersResult
+                            filters={filters}
+                            onFilters={handleFilters}
+                            onResetFilters={handleResetFilters}
+                            results={documents.length}
+                            sx={{ p: { xs: 1, md: 2.5 }, pt: 0 }}
+                          />
+                        )}
+                      </>
+                    ),
+                    noRowsOverlay: () => <EmptyContent title={t('No Data')} />,
+                    noResultsOverlay: () => <EmptyContent title={t('No results found')} />,
+                  }}
+                  slotProps={{
+                    columnsPanel: {
+                      getTogglableColumns,
+                    },
+                  }}
+                />
+              </Box>
+            </Card>
+          </Box>
+          {/* Mini Summary Card */}
+          <Card
+            sx={{
+              minWidth: { xs: '100%', md: 260 },
+              maxWidth: { xs: '100%', md: 340 },
+              p: { xs: 1.5, md: 2 },
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              mt: { xs: 0, md: 0 },
+              flexShrink: 0,
+              boxShadow: { xs: 0, md: 1 },
             }}
-            slotProps={{
-              columnsPanel: {
-                getTogglableColumns,
-              },
-            }}
-          />
-        </Card>
+          >
+            <CardHeader title={t('Mini Özet')} sx={{ p: 0, mb: 2, textAlign: 'center' }} />
+            <Chart
+              dir="ltr"
+              type="donut"
+              series={donutSeries}
+              options={chartOptions}
+              width={220}
+              height={220}
+            />
+            <Box sx={{ width: '100%', mt: 2 }}>
+              <Typography variant="body2">
+                Data Girilmiş: <b>{dataGirilmis}</b>
+              </Typography>
+              <Typography variant="body2">
+                Yayınlanmış: <b>{published}</b>
+              </Typography>
+              <Typography variant="body2">
+                Klass Onaylı: <b>{klassApproved}</b>
+              </Typography>
+              <Typography variant="body2">
+                Bayrak Onaylı: <b>{flagApproved}</b>
+              </Typography>
+              <Typography variant="body2">
+                Onayda: <b>{onayda}</b>
+              </Typography>
+              <Typography variant="body2">
+                Gecikmiş: <b>{gecikmis}</b>
+              </Typography>
+              <Typography variant="body2" sx={{ mt: 1 }}>
+                Toplam: <b>{total}</b>
+              </Typography>
+            </Box>
+          </Card>
+        </Stack>
       </Container>
 
       <ConfirmDialog
@@ -429,15 +554,25 @@ export default function DocumentsListView() {
 // ----------------------------------------------------------------------
 
 function applyFilter({ inputData, filters }) {
-  const { stock, publish } = filters;
+  const { project, type, status, dateRange } = filters;
+  let filtered = inputData;
 
-  if (stock.length) {
-    inputData = inputData.filter((desing) => stock.includes(desing.inventoryType));
+  if (project) {
+    filtered = filtered.filter((doc) => doc.projectCode === project);
   }
-
-  if (publish.length) {
-    inputData = inputData.filter((desing) => publish.includes(desing.publish));
+  if (type) {
+    filtered = filtered.filter((doc) => doc.type === type);
   }
-
-  return inputData;
+  if (status && status !== 'all') {
+    filtered = filtered.filter((doc) => doc.status === status);
+  }
+  if (dateRange && dateRange[0] && dateRange[1]) {
+    const start = new Date(dateRange[0]).setHours(0, 0, 0, 0);
+    const end = new Date(dateRange[1]).setHours(23, 59, 59, 999);
+    filtered = filtered.filter((doc) => {
+      const created = new Date(doc.createdAt).getTime();
+      return created >= start && created <= end;
+    });
+  }
+  return filtered;
 }

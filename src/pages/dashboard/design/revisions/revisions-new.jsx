@@ -13,13 +13,19 @@ import EmptyContent from 'src/components/empty-content';
 
 import RevisionNewEditForm from 'src/sections/desing/revisions/revision-new-edit-form';
 import { useGetDocument } from 'src/api/document';
+import { useGetRevision } from 'src/api/revision';
 
 // ----------------------------------------------------------------------
 
 export default function RevisionsNewPage() {
-  const { id } = useParams();
+  const { id, revisionId } = useParams();
 
+  // Eğer revisionId varsa update modundayız, yoksa yeni ekleme modundayız
+  const isEdit = Boolean(revisionId);
+
+  // RevisionId varsa revision'ı çek, yoksa document'i çek
   const { document, documentLoading, documentError } = useGetDocument(id);
+  const { revision, revisionLoading, revisionError } = useGetRevision(revisionId);
 
   const renderLoading = (
     <Box sx={{ py: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -31,7 +37,7 @@ export default function RevisionsNewPage() {
     <Container>
       <EmptyContent
         filled
-        title="Document not found"
+        title={isEdit ? 'Revision not found' : 'Document not found'}
         action={
           <Button
             component={RouterLink}
@@ -50,12 +56,15 @@ export default function RevisionsNewPage() {
   return (
     <>
       <Helmet>
-        <title> Dashboard: New Revision</title>
+        <title> Dashboard: {isEdit ? 'Edit Revision' : 'New Revision'}</title>
       </Helmet>
 
-      {documentLoading && renderLoading}
-      {documentError && renderError}
-      {document && <RevisionNewEditForm currentDocument={document} />}
+      {(isEdit ? revisionLoading : documentLoading) && renderLoading}
+      {(isEdit ? revisionError : documentError) && renderError}
+      {isEdit && revision && (
+        <RevisionNewEditForm currentDocument={document} currentRevision={revision} isEdit />
+      )}
+      {!isEdit && document && <RevisionNewEditForm currentDocument={document} />}
     </>
   );
 }

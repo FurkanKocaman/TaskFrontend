@@ -14,16 +14,15 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 
-import { postRevision } from 'src/api/document';
+import { postRevision, putRevision } from 'src/api/document';
 
 import { useSnackbar } from 'src/components/snackbar';
 import FormProvider, { RHFUpload, RHFTextField } from 'src/components/hook-form';
 import { useUserStore } from 'src/store/user-store';
 
-export default function RevisionNewEditForm({ currentDocument }) {
+export default function RevisionNewEditForm({ currentDocument, currentRevision, isEdit }) {
   const router = useRouter();
   const { enqueueSnackbar } = useSnackbar();
-
   const { user } = useUserStore();
 
   const NewRevisionSchema = Yup.object().shape({
@@ -33,10 +32,10 @@ export default function RevisionNewEditForm({ currentDocument }) {
 
   const defaultValues = useMemo(
     () => ({
-      notes: '',
+      notes: isEdit && currentRevision ? currentRevision.notes || '' : '',
       files: null,
     }),
-    []
+    [isEdit, currentRevision]
   );
 
   const methods = useForm({
@@ -57,21 +56,21 @@ export default function RevisionNewEditForm({ currentDocument }) {
   const onSubmit = handleSubmit(async (data) => {
     try {
       const formData = new FormData();
-
       formData.append('uploadedBy', user.email);
       formData.append('notes', data.notes || '');
-
-      if (data.files.length > 0) {
+      if (data.files && data.files.length > 0) {
         formData.append('documentFile', data.files[0]);
-      } else {
-        enqueueSnackbar('Please add a file', { variant: 'error' });
-        return;
       }
-
-      await postRevision(currentDocument._id, formData);
-
-      enqueueSnackbar('Revision created successfully!');
-      reset();
+      if (isEdit && currentRevision) {
+        await putRevision(currentRevision._id, formData);
+        enqueueSnackbar('Revision updated successfully! (Backend entegrasyonu eklenmeli)', {
+          variant: 'success',
+        });
+      } else {
+        await postRevision(currentDocument._id, formData);
+        enqueueSnackbar('Revision created successfully!');
+        reset();
+      }
       router.push(paths.dashboard.design.documents.details(currentDocument._id));
     } catch (error) {
       console.error('Submit error:', error);
@@ -82,13 +81,11 @@ export default function RevisionNewEditForm({ currentDocument }) {
   const handleDrop = useCallback(
     (acceptedFiles) => {
       const files = values.files || [];
-
       const newFiles = acceptedFiles.map((file) =>
         Object.assign(file, {
           preview: URL.createObjectURL(file),
         })
       );
-
       setValue('files', [...files, ...newFiles], { shouldValidate: true });
     },
     [setValue, values.files]
@@ -120,16 +117,14 @@ export default function RevisionNewEditForm({ currentDocument }) {
           sx={{ p: 3 }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="h6">Add New Revision</Typography>
+            <Typography variant="h6">{isEdit ? 'Edit Revision' : 'Add New Revision'}</Typography>
           </Box>
         </Box>
-
         <Stack spacing={3} sx={{ p: 3 }}>
           <Stack spacing={1.5}>
             <Typography variant="subtitle2">Notes</Typography>
             <RHFTextField name="notes" multiline rows={3} InputLabelProps={{ shrink: true }} />
           </Stack>
-
           <Stack spacing={1.5}>
             <Typography variant="subtitle2">Files</Typography>
             <RHFUpload
@@ -144,7 +139,6 @@ export default function RevisionNewEditForm({ currentDocument }) {
               helperText="Allowed files: PDF, Word, Excel, Images (max 100MB)"
             />
           </Stack>
-
           <Stack direction="row" justifyContent="flex-end" spacing={2}>
             <Button
               color="inherit"
@@ -155,7 +149,7 @@ export default function RevisionNewEditForm({ currentDocument }) {
               Cancel
             </Button>
             <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
-              Add Revision
+              {isEdit ? 'Update Revision' : 'Add Revision'}
             </LoadingButton>
           </Stack>
         </Stack>
@@ -168,4 +162,6 @@ RevisionNewEditForm.propTypes = {
   currentDocument: PropTypes.shape({
     _id: PropTypes.string,
   }).isRequired,
+  currentRevision: PropTypes.object,
+  isEdit: PropTypes.bool,
 };

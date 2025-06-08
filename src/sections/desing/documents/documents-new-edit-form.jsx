@@ -35,31 +35,31 @@ import { useUserStore } from 'src/store/user-store';
 const DESING_CATEGORY_GROUP_OPTIONS = [
   {
     classify: [
-      'Arajman',
-      'Hesap',
+      'Arrangement',
+      'Calculation',
       'Diagram',
-      'Elektrik',
-      'Teçhiz',
-      'Çelik',
+      'Electric',
+      'Equipment',
+      'Steel',
       'Plan',
-      'Prosedür',
-      'Rapor',
+      'Procedure',
+      'Report',
     ],
   },
 ];
 const DOCUMENT_STATUS_OPTIONS = [
   {
-    classify: ['Data Girilmiş', 'Yayınlanmış'],
+    classify: ['data_entered', 'published'],
   },
 ];
 const DOCUMENT_APPROVAL_STATUS_OPTIONS = [
   {
     classify: [
-      'Klass Onayı Gerekli',
-      'Bayrak Onayı Gerekli',
-      'Sadece Owner',
-      'Onayda',
-      'Onaylanmadı',
+      'class_approval_required',
+      'flag_approval_required',
+      'owner_only',
+      'in_approval',
+      'not_approved',
     ],
   },
 ];
@@ -76,13 +76,9 @@ export default function DocumentsNewEditForm({ currentDocument }) {
   };
 
   const router = useRouter();
-
   const mdUp = useResponsive('up', 'md');
-
   const { enqueueSnackbar } = useSnackbar();
-
   const { user } = useUserStore();
-
   const { t } = useTranslation();
 
   const NewDocumnetSchema = Yup.object().shape({
@@ -139,7 +135,6 @@ export default function DocumentsNewEditForm({ currentDocument }) {
   const onSubmit = handleSubmit(async (data) => {
     try {
       const formData = new FormData();
-
       formData.append('projectCode', data.projectName);
       formData.append('type', data.documentType);
       formData.append('documentNo', data.documentNo);
@@ -150,21 +145,17 @@ export default function DocumentsNewEditForm({ currentDocument }) {
       );
       formData.append('description', data.description);
       formData.append('createdBy', user.email);
-
       if (data.files.length > 0) {
         formData.append('documentFile', data.files[0]);
       } else {
         enqueueSnackbar(t('Please add a file'), { variant: 'error' });
         return;
       }
-      console.log('formData', formData);
       await postDocumentWithFile(formData);
-
       enqueueSnackbar(t('Document created successfully!'));
       reset();
       router.push(paths.dashboard.design.documents.root);
     } catch (error) {
-      console.error(error);
       enqueueSnackbar(error?.message || t('An error occurred'), { variant: 'error' });
     }
   });
@@ -172,13 +163,11 @@ export default function DocumentsNewEditForm({ currentDocument }) {
   const handleDrop = useCallback(
     (acceptedFiles) => {
       const files = values.files || [];
-
       const newFiles = acceptedFiles.map((file) =>
         Object.assign(file, {
           preview: URL.createObjectURL(file),
         })
       );
-
       setValue('files', [...files, ...newFiles], { shouldValidate: true });
     },
     [setValue, values.files]
@@ -236,15 +225,13 @@ export default function DocumentsNewEditForm({ currentDocument }) {
                   {DESING_CATEGORY_GROUP_OPTIONS.map((category) =>
                     category.classify.map((classify) => (
                       <option key={classify} value={classify}>
-                        {classify}
+                        {t(classify)}
                       </option>
                     ))
                   )}
                 </RHFSelect>
-
                 <RHFTextField name="documentNo" label={t('Document number')} />
                 <RHFTextField name="documentTopic" label={t('Document Topic')} />
-
                 <Controller
                   name="contractDate"
                   control={control}
@@ -276,7 +263,7 @@ export default function DocumentsNewEditForm({ currentDocument }) {
                   {DOCUMENT_STATUS_OPTIONS.map((category) =>
                     category.classify.map((classify) => (
                       <option key={classify} value={classify}>
-                        {classify}
+                        {t(classify)}
                       </option>
                     ))
                   )}
@@ -291,13 +278,12 @@ export default function DocumentsNewEditForm({ currentDocument }) {
                   {DOCUMENT_APPROVAL_STATUS_OPTIONS.map((category) =>
                     category.classify.map((classify) => (
                       <option key={classify} value={classify}>
-                        {classify}
+                        {t(classify)}
                       </option>
                     ))
                   )}
                 </RHFSelect>
               </Box>
-
               <Divider sx={{ borderStyle: 'dashed' }} />
             </Stack>
           </Card>
@@ -311,7 +297,6 @@ export default function DocumentsNewEditForm({ currentDocument }) {
                 <Typography variant="subtitle2">{t('Description')}</Typography>
                 <RHFEditor simple name="description" />
               </Stack>
-
               <Stack spacing={1.5}>
                 <Typography variant="subtitle2">{t('Files')}</Typography>
                 <RHFUpload
@@ -322,7 +307,7 @@ export default function DocumentsNewEditForm({ currentDocument }) {
                   onDrop={handleDrop}
                   onRemove={handleRemoveFile}
                   onRemoveAll={handleRemoveAllFiles}
-                  onUpload={() => console.info('ON UPLOAD')}
+                  onUpload={() => {}}
                 />
               </Stack>
             </Stack>
@@ -340,7 +325,6 @@ export default function DocumentsNewEditForm({ currentDocument }) {
         <Button color="inherit" onClick={() => router.push(paths.dashboard.design.documents.root)}>
           {t('Cancel')}
         </Button>
-
         <LoadingButton type="submit" variant="contained" size="large" loading={isSubmitting}>
           {!currentDocument ? t('Create Document') : t('Save Changes')}
         </LoadingButton>
@@ -352,7 +336,6 @@ export default function DocumentsNewEditForm({ currentDocument }) {
     <FormProvider methods={methods} onSubmit={onSubmit}>
       <Grid container spacing={3}>
         {renderDetails}
-
         {renderActions}
       </Grid>
     </FormProvider>
